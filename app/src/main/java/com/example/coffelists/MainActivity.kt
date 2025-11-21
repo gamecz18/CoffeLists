@@ -18,6 +18,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -59,67 +60,73 @@ fun searchDialog(
         title = { Text("Vyhledat kávu") },
         text =
             {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = {
-                        name = it
-                        onValueChange(it)
-                    },
-                    label = { Text("Název kávy") }
-
-                )
-
-
-            Box() {
-                OutlinedTextField(
-                    value = selectedRoast?.czJmeno ?: "Libovolné pražení",
-                    onValueChange = {},
-                    readOnly = true,
-                    trailingIcon = {
-
-                        IconButton({ expanded = true }) {
-                            Icon(Icons.Default.ArrowDropDown, null)
-                        }
-                    })
-
-
-                DropdownMenu(
-
-                    expanded = expanded,
-                    onDismissRequest = { expanded = false }
-
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    DropdownMenuItem(
-                        text = {Text("Libovolné pražení")},
-                        onClick = {
-                            selectedRoast = null
-                            expanded = false
-                        }
+                    OutlinedTextField(
+                        value = name,
+                        onValueChange = {
+                            name = it
+                            onValueChange(it)
+                        },
+                        label = { Text("Název kávy") }
+
                     )
 
-                    HorizontalDivider()
-                    RoastLevel.values().forEach { roastLevel ->
-                        DropdownMenuItem(
-                            text = {Text( roastLevel.czJmeno )},
-                            onClick = {
-                                selectedRoast = roastLevel
-                                expanded = false
+
+                    Box() {
+                        OutlinedTextField(
+                            value = selectedRoast?.czJmeno ?: "Libovolné pražení",
+                            onValueChange = {},
+                            readOnly = true,
+                            trailingIcon = {
+
+                                IconButton({ expanded = true }) {
+                                    Icon(Icons.Default.ArrowDropDown, null)
+                                }
+                            })
+
+
+                        DropdownMenu(
+
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false }
+
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Libovolné pražení") },
+                                onClick = {
+                                    selectedRoast = null
+                                    expanded = false
+                                }
+                            )
+
+                            HorizontalDivider()
+                            RoastLevel.entries.forEach { roastLevel ->
+                                DropdownMenuItem(
+                                    text = { Text(roastLevel.czJmeno) },
+                                    onClick = {
+                                        selectedRoast = roastLevel
+                                        expanded = false
+                                    }
+
+                                )
+
                             }
 
-                        )
+
+                        }
 
                     }
-
-
+                    Text(
+                        text = "Můžeš filtrovat podle názvu nebo typu pražení. Pokud necháš některé pole prázdné, bude ignorováno. (Pro výchozí hledání nech obě pole prázdná.)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
 
-            }
-            }
+            },
 
-        },
 
         confirmButton = {
             Button(onClick = { onConfirm(name, selectedRoast) }) {
@@ -232,6 +239,7 @@ fun CoffeeListScreen(
 
 
     Scaffold(
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = { Text("Coffee List") },
@@ -287,7 +295,15 @@ fun CoffeeListScreen(
             searchDialog(
                 onDismiss = { filterDialog = false },
                 onConfirm = { name, roast ->
-                   filtredCoffes = coffees.filter { coffee ->
+
+                    if (name.isBlank() && roast == null) {
+                        isFiltered = false
+                        filtredCoffes = coffees
+                        filterDialog = false
+                        return@searchDialog
+                    }
+
+                        filtredCoffes = coffees.filter { coffee ->
 
                         val nameMatch = coffee.name.contains(name, ignoreCase = true)
                         val roastMatch = roast == null || coffee.roastLevel == roast
@@ -300,7 +316,7 @@ fun CoffeeListScreen(
                     filterDialog= false
 
                 },
-                onValueChange = { text ->
+                onValueChange = { _ ->
 
                 }
             )
