@@ -57,7 +57,69 @@ fun searchDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("Vyhledat kávu") },
-        text = {},
+        text =
+            {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = {
+                        name = it
+                        onValueChange(it)
+                    },
+                    label = { Text("Název kávy") }
+
+                )
+
+
+            Box() {
+                OutlinedTextField(
+                    value = selectedRoast?.czJmeno ?: "Libovolné pražení",
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = {
+
+                        IconButton({ expanded = true }) {
+                            Icon(Icons.Default.ArrowDropDown, null)
+                        }
+                    })
+
+
+                DropdownMenu(
+
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+
+                ) {
+                    DropdownMenuItem(
+                        text = {Text("Libovolné pražení")},
+                        onClick = {
+                            selectedRoast = null
+                            expanded = false
+                        }
+                    )
+
+                    HorizontalDivider()
+                    RoastLevel.values().forEach { roastLevel ->
+                        DropdownMenuItem(
+                            text = {Text( roastLevel.czJmeno )},
+                            onClick = {
+                                selectedRoast = roastLevel
+                                expanded = false
+                            }
+
+                        )
+
+                    }
+
+
+                }
+
+            }
+            }
+
+        },
 
         confirmButton = {
             Button(onClick = { onConfirm(name, selectedRoast) }) {
@@ -74,7 +136,7 @@ fun searchDialog(
 
 }
 
-// Hlavní navigace aplikace
+
 @Composable
 fun CoffeeAppUI() {
     val navController = rememberNavController()
@@ -84,7 +146,6 @@ fun CoffeeAppUI() {
 
     var coffees by remember { mutableStateOf(listOf<Coffee>()) }
     var isLoading by remember { mutableStateOf(true) }
-
 
 
     LaunchedEffect(Unit) {
@@ -166,6 +227,10 @@ fun CoffeeListScreen(
 {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var filterDialog by remember { mutableStateOf(false) }
+    var filtredCoffes by remember { mutableStateOf(listOf<Coffee>()) }
+    var isFiltered by rememberSaveable { mutableStateOf(false) }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -222,6 +287,16 @@ fun CoffeeListScreen(
             searchDialog(
                 onDismiss = { filterDialog = false },
                 onConfirm = { name, roast ->
+                   filtredCoffes = coffees.filter { coffee ->
+
+                        val nameMatch = coffee.name.contains(name, ignoreCase = true)
+                        val roastMatch = roast == null || coffee.roastLevel == roast
+
+                        nameMatch && roastMatch
+
+                    }
+
+                    isFiltered = true
                     filterDialog= false
 
                 },
@@ -231,6 +306,7 @@ fun CoffeeListScreen(
             )
         }
 
+        val listToShow = if (isFiltered) filtredCoffes else coffees
 
         if (isLoading) {
             Box(
@@ -251,17 +327,28 @@ fun CoffeeListScreen(
 
 
 
-                if (coffees.isEmpty()) {
-                    item {
-                        Text(
-                            text = "Zatím žádné kávy. Klikni na ➕",
+                if (listToShow.isEmpty()) {
+                    if ( isFiltered )
+                    {
+                        item { Text(
+                            text = "Nebyly nalezeny žádné kávy odpovídající filtru.",
                             modifier = Modifier.padding(16.dp)
-                        )
+                        )  }
+
+                    }else {
+                        item {
+                            Text(
+                                text = "Zatím žádné kávy. Klikni na ➕",
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
                     }
+
+
                 }
 
-                items(coffees.size) { index ->
-                    val coffee = coffees[index]
+                items(listToShow.size) { index ->
+                    val coffee = listToShow[index]
 
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable {
