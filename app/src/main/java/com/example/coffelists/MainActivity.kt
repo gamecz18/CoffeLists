@@ -1,4 +1,4 @@
-package com.example.coffelists
+package cz.g18.coffeelists
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -11,7 +11,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -42,18 +41,22 @@ class MainActivity : ComponentActivity() {
 }
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun searchDialog(
     onDismiss: () -> Unit,
     onConfirm: (String, RoastLevel? ) -> Unit,
-    onValueChange: (String) -> Unit
+    onValueChange: (String) -> Unit,
+    initialName: String = "",
+    initialRoast: RoastLevel? = null
 
 )
 {
 
-    var name by remember { mutableStateOf("") }
+    var name by rememberSaveable { mutableStateOf(initialName) }
     var expanded by remember { mutableStateOf(false) }
-    var selectedRoast by remember { mutableStateOf<RoastLevel?>(null) }
+    var selectedRoast by rememberSaveable { mutableStateOf(initialRoast) }
+
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -74,24 +77,24 @@ fun searchDialog(
                     )
 
 
-                    Box() {
+                    ExposedDropdownMenuBox(
+                        expanded = expanded,
+                        onExpandedChange = { expanded = it }
+                    ) {
                         OutlinedTextField(
                             value = selectedRoast?.czJmeno ?: "Libovolné pražení",
                             onValueChange = {},
                             readOnly = true,
+                            label = { Text("Typ pražení") },
                             trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            },
+                            modifier = Modifier.menuAnchor(MenuAnchorType.PrimaryNotEditable)
+                        )
 
-                                IconButton({ expanded = true }) {
-                                    Icon(Icons.Default.ArrowDropDown, null)
-                                }
-                            })
-
-
-                        DropdownMenu(
-
+                        ExposedDropdownMenu(
                             expanded = expanded,
                             onDismissRequest = { expanded = false }
-
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Libovolné pražení") },
@@ -102,6 +105,7 @@ fun searchDialog(
                             )
 
                             HorizontalDivider()
+
                             RoastLevel.entries.forEach { roastLevel ->
                                 DropdownMenuItem(
                                     text = { Text(roastLevel.czJmeno) },
@@ -109,14 +113,9 @@ fun searchDialog(
                                         selectedRoast = roastLevel
                                         expanded = false
                                     }
-
                                 )
-
                             }
-
-
                         }
-
                     }
                     Text(
                         text = "Můžeš filtrovat podle názvu nebo typu pražení. Pokud necháš některé pole prázdné, bude ignorováno. (Pro výchozí hledání nech obě pole prázdná.)",
@@ -151,12 +150,28 @@ fun CoffeeAppUI() {
     val repository = remember { CoffeeFileWork(context) }
     val scope = rememberCoroutineScope()
 
-    var coffees by remember { mutableStateOf(listOf<Coffee>()) }
+    var allCoffees by remember { mutableStateOf(listOf<Coffee>()) }
     var isLoading by remember { mutableStateOf(true) }
 
+    // Filtrovací stavy v CoffeeAppUI - přežijí změnu konfigurace
+    var filterName by rememberSaveable { mutableStateOf("") }
+    var filterRoast by rememberSaveable { mutableStateOf<RoastLevel?>(null) }
+
+    // Aplikace filtru při každé změně
+    val filteredCoffees = remember(allCoffees, filterName, filterRoast) {
+        if (filterName.isBlank() && filterRoast == null) {
+            allCoffees
+        } else {
+            allCoffees.filter { coffee ->
+                val nameMatch = coffee.name.contains(filterName, ignoreCase = true)
+                val roastMatch = filterRoast == null || coffee.roastLevel == filterRoast
+                nameMatch && roastMatch
+            }
+        }
+    }
 
     LaunchedEffect(Unit) {
-        coffees = repository.getAllCoffees()
+        allCoffees = repository.getAllCoffees()
         isLoading = false
     }
 
@@ -164,8 +179,14 @@ fun CoffeeAppUI() {
 
         composable("home") {
             CoffeeListScreen(
-                coffees = coffees,
+                coffees = filteredCoffees,
                 isLoading = isLoading,
+                currentFilterName = filterName,
+                currentFilterRoast = filterRoast,
+                onFilterChange = { name, roast ->
+                    filterName = name
+                    filterRoast = roast
+                },
                 onAddClick = {
                     navController.navigate("addCoffee")
                 },
@@ -177,7 +198,7 @@ fun CoffeeAppUI() {
 
         composable("coffeeDetail/{coffeeId}") { backStackEntry ->
             val coffeeId = backStackEntry.arguments?.getString("coffeeId")
-            val coffee = coffees.find { it.id == coffeeId }
+            val coffee = allCoffees.find { it.id == coffeeId }
 
             if (coffee != null) {
                 CoffeeInfoView(
@@ -185,13 +206,13 @@ fun CoffeeAppUI() {
                     onSave = { updatedCoffee ->
                         scope.launch {
                             repository.updateCoffee(updatedCoffee)
-                            coffees = repository.getAllCoffees()
+                            allCoffees = repository.getAllCoffees()
                         }
                     },
                     onDelete = {
                         scope.launch {
                             repository.deleteCoffee(coffee.id)
-                            coffees = repository.getAllCoffees()
+                            allCoffees = repository.getAllCoffees()
                             navController.popBackStack()
                         }
                     },
@@ -209,7 +230,7 @@ fun CoffeeAppUI() {
                 onSaveCoffee = { newCoffee ->
                     scope.launch {
                         repository.addCoffee(newCoffee)
-                        coffees = repository.getAllCoffees()
+                        allCoffees = repository.getAllCoffees()
                         navController.popBackStack()
                     }
                 },
@@ -228,14 +249,17 @@ fun CoffeeAppUI() {
 fun CoffeeListScreen(
     coffees: List<Coffee>,
     isLoading: Boolean,
+    currentFilterName: String,
+    currentFilterRoast: RoastLevel?,
+    onFilterChange: (String, RoastLevel?) -> Unit,
     onAddClick: () -> Unit,
     onCoffeeClick: (Coffee) -> Unit
 )
 {
     val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
     var filterDialog by remember { mutableStateOf(false) }
-    var filtredCoffes by remember { mutableStateOf(listOf<Coffee>()) }
-    var isFiltered by rememberSaveable { mutableStateOf(false) }
+
+    val isFiltered = currentFilterName.isNotBlank() || currentFilterRoast != null
 
 
     Scaffold(
@@ -294,35 +318,15 @@ fun CoffeeListScreen(
         if (filterDialog) {
             searchDialog(
                 onDismiss = { filterDialog = false },
+                initialName = currentFilterName,
+                initialRoast = currentFilterRoast,
                 onConfirm = { name, roast ->
-
-                    if (name.isBlank() && roast == null) {
-                        isFiltered = false
-                        filtredCoffes = coffees
-                        filterDialog = false
-                        return@searchDialog
-                    }
-
-                        filtredCoffes = coffees.filter { coffee ->
-
-                        val nameMatch = coffee.name.contains(name, ignoreCase = true)
-                        val roastMatch = roast == null || coffee.roastLevel == roast
-
-                        nameMatch && roastMatch
-
-                    }
-
-                    isFiltered = true
-                    filterDialog= false
-
+                    onFilterChange(name, roast)
+                    filterDialog = false
                 },
-                onValueChange = { _ ->
-
-                }
+                onValueChange = { _ -> }
             )
         }
-
-        val listToShow = if (isFiltered) filtredCoffes else coffees
 
         if (isLoading) {
             Box(
@@ -339,19 +343,15 @@ fun CoffeeListScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-
-
-
-
-                if (listToShow.isEmpty()) {
-                    if ( isFiltered )
-                    {
-                        item { Text(
-                            text = "Nebyly nalezeny žádné kávy odpovídající filtru.",
-                            modifier = Modifier.padding(16.dp)
-                        )  }
-
-                    }else {
+                if (coffees.isEmpty()) {
+                    if (isFiltered) {
+                        item {
+                            Text(
+                                text = "Nebyly nalezeny žádné kávy odpovídající filtru.",
+                                modifier = Modifier.padding(16.dp)
+                            )
+                        }
+                    } else {
                         item {
                             Text(
                                 text = "Zatím žádné kávy. Klikni na ➕",
@@ -359,12 +359,10 @@ fun CoffeeListScreen(
                             )
                         }
                     }
-
-
                 }
 
-                items(listToShow.size) { index ->
-                    val coffee = listToShow[index]
+                items(coffees.size) { index ->
+                    val coffee = coffees[index]
 
                     Card(
                         modifier = Modifier.fillMaxWidth().clickable {

@@ -6,17 +6,17 @@ plugins {
 }
 
 android {
-    namespace = "com.example.coffelists"
+    namespace = "cz.g18.coffeelists"
     compileSdk {
         version = release(36)
     }
 
     defaultConfig {
-        applicationId = "com.example.coffelists"
-        minSdk = 34
-        targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        applicationId = "cz.g18.coffeelists"
+        minSdk = 24
+        targetSdk = 35
+        versionCode = 3
+        versionName = "1.0.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

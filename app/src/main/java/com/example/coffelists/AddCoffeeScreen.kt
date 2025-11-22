@@ -1,4 +1,4 @@
-package com.example.coffelists
+package cz.g18.coffeelists
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult

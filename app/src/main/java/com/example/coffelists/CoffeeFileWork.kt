@@ -1,4 +1,4 @@
-package com.example.coffelists
+package cz.g18.coffeelists
 import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

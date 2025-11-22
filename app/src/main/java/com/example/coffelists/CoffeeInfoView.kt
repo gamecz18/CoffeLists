@@ -1,5 +1,4 @@
-package com.example.coffelists
-
+package cz.g18.coffeelists
 import android.net.Uri
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState

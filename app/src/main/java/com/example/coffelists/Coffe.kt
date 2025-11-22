@@ -1,5 +1,4 @@
-package com.example.coffelists
-
+package cz.g18.coffeelists
 import kotlinx.serialization.Serializable
 
 @Serializable
