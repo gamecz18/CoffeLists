@@ -171,7 +171,8 @@ fun CoffeeAppUI() {
     }
 
     LaunchedEffect(Unit) {
-        allCoffees = repository.getAllCoffees()
+        allCoffees = repository.getAllCoffees().reversed()
+        kotlinx.coroutines.yield()
         isLoading = false
     }
 
@@ -206,14 +207,17 @@ fun CoffeeAppUI() {
                     onSave = { updatedCoffee ->
                         scope.launch {
                             repository.updateCoffee(updatedCoffee)
-                            allCoffees = repository.getAllCoffees()
+                            kotlinx.coroutines.yield()
+                            allCoffees = repository.getAllCoffees().reversed()
                         }
                     },
                     onDelete = {
                         scope.launch {
                             navController.popBackStack()
                             repository.deleteCoffee(coffee.id)
-                            allCoffees = repository.getAllCoffees()
+                            kotlinx.coroutines.yield()
+                            allCoffees = repository.getAllCoffees().reversed()
+
                         }
                     },
                     onBack = {
@@ -230,7 +234,8 @@ fun CoffeeAppUI() {
                 onSaveCoffee = { newCoffee ->
                     scope.launch {
                         repository.addCoffee(newCoffee)
-                        allCoffees = repository.getAllCoffees()
+                        allCoffees = repository.getAllCoffees().reversed()
+                        kotlinx.coroutines.yield()
                         navController.popBackStack()
                     }
                 },

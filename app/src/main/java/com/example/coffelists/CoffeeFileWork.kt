@@ -28,7 +28,7 @@ class CoffeeFileWork(private val context: Context) {
         val coffeesJson = preferences[COFFEES_KEY] ?: return emptyList()
 
         return try {
-            json.decodeFromString<List<Coffee>>(coffeesJson).reversed()
+            json.decodeFromString<List<Coffee>>(coffeesJson)
         } catch (e: Exception) {
             emptyList()
         }
