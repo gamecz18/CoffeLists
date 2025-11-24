@@ -3,7 +3,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Coffee(
-    val id: String = System.currentTimeMillis().toString(),
+    val id: String = java.util.UUID.randomUUID().toString(),
     val name: String,
     val roastLevel: RoastLevel? = null,
     val notes: String,

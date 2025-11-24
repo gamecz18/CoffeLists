@@ -351,7 +351,7 @@ fun AddCoffeeScreen(
                             existingCoffee.copy(
                                 name = coffeeName,
                                 notes = coffeeNotes,
-                                imagePath = coffeeImageUri.toString(),
+                                imagePath = coffeeImageUri?.toString(),
                                 roastLevel = coffeeRoastLevel,
                                 grindLevel = coffeeGroudSize,
                                 weightInGrams = weightIn,
@@ -362,7 +362,7 @@ fun AddCoffeeScreen(
                             Coffee(
                                 name = coffeeName,
                                 notes = coffeeNotes,
-                                imagePath = coffeeImageUri.toString(),
+                                imagePath = coffeeImageUri?.toString(),
                                 roastLevel = coffeeRoastLevel,
                                 grindLevel = coffeeGroudSize,
                                 weightInGrams = weightIn,

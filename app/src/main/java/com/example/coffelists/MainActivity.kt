@@ -153,11 +153,11 @@ fun CoffeeAppUI() {
     var allCoffees by remember { mutableStateOf(listOf<Coffee>()) }
     var isLoading by remember { mutableStateOf(true) }
 
-    // Filtrovací stavy v CoffeeAppUI - přežijí změnu konfigurace
+
     var filterName by rememberSaveable { mutableStateOf("") }
     var filterRoast by rememberSaveable { mutableStateOf<RoastLevel?>(null) }
 
-    // Aplikace filtru při každé změně
+
     val filteredCoffees = remember(allCoffees, filterName, filterRoast) {
         if (filterName.isBlank() && filterRoast == null) {
             allCoffees
@@ -211,9 +211,9 @@ fun CoffeeAppUI() {
                     },
                     onDelete = {
                         scope.launch {
+                            navController.popBackStack()
                             repository.deleteCoffee(coffee.id)
                             allCoffees = repository.getAllCoffees()
-                            navController.popBackStack()
                         }
                     },
                     onBack = {
