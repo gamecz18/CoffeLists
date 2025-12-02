@@ -70,7 +70,7 @@ CoffeLists/
 │   │   ├── main/
 │   │   │   ├── java/com/example/coffelists/
 │   │   │   │   ├── MainActivity.kt          # Hlavní aktivita
-│   │   │   │   ├── Coffe.kt                 # Datový model kávy
+│   │   │   │   ├── Coffe.kt                 # Datový model kávy (třída Coffee)
 │   │   │   │   ├── AddCoffeeScreen.kt       # Obrazovka pro přidání kávy
 │   │   │   │   ├── CoffeeInfoView.kt        # Detail kávy
 │   │   │   │   ├── CoffeeFileWork.kt        # Práce se soubory
