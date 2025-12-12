@@ -126,8 +126,8 @@ fun AddCoffeeScreen(
 
     var coffeeName by rememberSaveable { mutableStateOf(existingCoffee?.name ?: "") }
     var coffeeNotes by rememberSaveable { mutableStateOf(existingCoffee?.notes ?: "") }
-    var coffeeImageUri by rememberSaveable {
-        mutableStateOf<Uri?>(existingCoffee?.imagePath?.let { Uri.parse(it) })
+    var coffeeImagePath by rememberSaveable {
+        mutableStateOf(existingCoffee?.imagePath)
     }
     var coffeeGroudSize by rememberSaveable { mutableStateOf(existingCoffee?.grindLevel ?: 0f) }
     var weightIn by rememberSaveable { mutableStateOf(existingCoffee?.weightInGrams ?: 0f) }
@@ -136,9 +136,12 @@ fun AddCoffeeScreen(
     var roastLevelExpanded by rememberSaveable { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val photoFile = remember {
-        File(context.cacheDir, "coffee_${System.currentTimeMillis()}.jpg")
+    val photosDir = File(context.filesDir, "photos")
+    if (!photosDir.exists()) {
+        photosDir.mkdirs()
     }
+
+    val photoFile = File(photosDir, "coffee_${System.currentTimeMillis()}.jpg")
     val photoUri = remember {
         FileProvider.getUriForFile(
             context,
@@ -150,7 +153,9 @@ fun AddCoffeeScreen(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
         if (success) {
-            coffeeImageUri = photoUri
+            val savedPath = ImageHelper.saveImageToInternalStorage(context, photoUri)
+            coffeeImagePath = savedPath
+            photoFile.delete()
         }
     }
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
@@ -170,7 +175,10 @@ fun AddCoffeeScreen(
     val galleryLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
     ) { uri: Uri? ->
-        coffeeImageUri = uri
+        uri?.let {
+            val savedPath = ImageHelper.saveImageToInternalStorage(context, it)
+            coffeeImagePath = savedPath
+        }
     }
 
     fun requestCameraAndTakePhoto() {
@@ -286,16 +294,19 @@ fun AddCoffeeScreen(
                 }
             }
 
-            coffeeImageUri?.let { uri ->
-                AsyncImage(
-                    model = uri,
-                    contentDescription = "Náhled fotky",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(200.dp)
-                        .clip(RoundedCornerShape(8.dp)),
-                    contentScale = ContentScale.Fit
-                )
+            coffeeImagePath?.let { path ->
+                val imageUri = ImageHelper.getImageUri(path)
+                if (imageUri != null) {
+                    AsyncImage(
+                        model = imageUri,
+                        contentDescription = "Náhled fotky",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(200.dp)
+                            .clip(RoundedCornerShape(8.dp)),
+                        contentScale = ContentScale.Fit
+                    )
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
@@ -347,22 +358,20 @@ fun AddCoffeeScreen(
                 Button(
                     onClick = {
                         val coffee = if (existingCoffee != null) {
-
                             existingCoffee.copy(
                                 name = coffeeName,
                                 notes = coffeeNotes,
-                                imagePath = coffeeImageUri?.toString(),
+                                imagePath = coffeeImagePath,
                                 roastLevel = coffeeRoastLevel,
                                 grindLevel = coffeeGroudSize,
                                 weightInGrams = weightIn,
                                 weighOut = weightOut
                             )
                         } else {
-
                             Coffee(
                                 name = coffeeName,
                                 notes = coffeeNotes,
-                                imagePath = coffeeImageUri?.toString(),
+                                imagePath = coffeeImagePath,
                                 roastLevel = coffeeRoastLevel,
                                 grindLevel = coffeeGroudSize,
                                 weightInGrams = weightIn,

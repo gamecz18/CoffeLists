@@ -73,9 +73,10 @@ fun CoffeeInfoView(
             ) {
                 // Fotka
                 coffee.imagePath?.let { path ->
-                    if (path != "null") {
+                    val imageUri = ImageHelper.getImageUri(path)
+                    if (imageUri != null) {
                         AsyncImage(
-                            model = Uri.parse(path),
+                            model = imageUri,
                             contentDescription = "Fotka kávy",
                             modifier = Modifier
                                 .fillMaxWidth()

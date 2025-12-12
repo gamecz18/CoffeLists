@@ -382,16 +382,19 @@ fun CoffeeListScreen(
                             modifier = Modifier.padding(16.dp)
                         ) {
                             // Fotka kávy
-                            if (coffee.imagePath != null && coffee.imagePath != "null") {
-                                AsyncImage(
-                                    model = coffee.imagePath,
-                                    contentDescription = "Fotka kávy",
-                                    modifier = Modifier
-                                        .size(80.dp)
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentScale = ContentScale.Fit
-                                )
-                                Spacer(modifier = Modifier.width(16.dp))
+                            if (coffee.imagePath != null) {
+                                val imageUri = ImageHelper.getImageUri(coffee.imagePath)
+                                if (imageUri != null) {
+                                    AsyncImage(
+                                        model = imageUri,
+                                        contentDescription = "Fotka kávy",
+                                        modifier = Modifier
+                                            .size(80.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Fit
+                                    )
+                                    Spacer(modifier = Modifier.width(16.dp))
+                                }
                             }
 
                             // Informace o kávě
