@@ -119,7 +119,7 @@ Příspěvky jsou vítány! Pokud chcete přispět:
 
 ## 📝 Changelog
 
-### v1.0.4
+### v1.0.6
 - Aktuální stabilní verze
 - Základní funkce pro správu káv
 
