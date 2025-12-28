@@ -4,6 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -178,9 +187,67 @@ fun CoffeeAppUI() {
         isLoading = false
     }
 
-    NavHost(navController = navController, startDestination = "home") {
+    // Animation duration for smooth transitions
+    val animationDuration = 400
 
-        composable("home") {
+    NavHost(
+        navController = navController,
+        startDestination = "home",
+        // Default enter transition: slide in from right with fade
+        enterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(animationDuration))
+        },
+        // Default exit transition: slide out to left with fade
+        exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(animationDuration / 2))
+        },
+        // Pop enter transition: slide in from left with fade (going back)
+        popEnterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(animationDuration))
+        },
+        // Pop exit transition: slide out to right with fade (going back)
+        popExitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(animationDuration / 2))
+        }
+    ) {
+
+        composable(
+            route = "home",
+            // Home screen uses fade + scale for a more subtle effect
+            enterTransition = {
+                fadeIn(animationSpec = tween(animationDuration)) +
+                scaleIn(
+                    initialScale = 0.95f,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                )
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(animationDuration / 2)) +
+                scaleOut(
+                    targetScale = 0.95f,
+                    animationSpec = tween(animationDuration / 2, easing = EaseIn)
+                )
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(animationDuration)) +
+                scaleIn(
+                    initialScale = 0.95f,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                )
+            }
+        ) {
             CoffeeListScreen(
                 coffees = filteredCoffees,
                 isLoading = isLoading,
@@ -199,7 +266,28 @@ fun CoffeeAppUI() {
             )
         }
 
-        composable("coffeeDetail/{coffeeId}") { backStackEntry ->
+        composable(
+            route = "coffeeDetail/{coffeeId}",
+            // Detail screen slides in from right
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(animationDuration))
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(animationDuration, easing = EaseIn)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(animationDuration, easing = EaseOut)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            }
+        ) { backStackEntry ->
             val coffeeId = backStackEntry.arguments?.getString("coffeeId")
             val coffee = allCoffees.find { it.id == coffeeId }
 
@@ -230,7 +318,28 @@ fun CoffeeAppUI() {
         }
 
 
-        composable("addCoffee") {
+        composable(
+            route = "addCoffee",
+            // Add screen slides up from bottom for a modal-like feel
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(animationDuration))
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(animationDuration, easing = EaseIn)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                    animationSpec = tween(animationDuration, easing = EaseOut)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            }
+        ) {
             AddCoffeeScreen(
                 existingCoffee = null,
                 onSaveCoffee = { newCoffee ->
