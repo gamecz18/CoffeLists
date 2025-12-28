@@ -1,3 +1,72 @@
 <resources>
     <string name="app_name">CoffeLists</string>
+
+    <!-- Common -->
+    <string name="cancel">Cancel</string>
+    <string name="ok">OK</string>
+    <string name="back">Back</string>
+    <string name="not_specified">Not specified</string>
+
+    <!-- Coffee List Screen -->
+    <string name="coffee_list_title">Coffee List</string>
+    <string name="search_coffee">Search coffee</string>
+    <string name="add_coffee">Add coffee</string>
+    <string name="no_coffees_yet">No coffees yet. Click on +</string>
+    <string name="no_coffees_filter">No coffees found matching the filter.</string>
+    <string name="coffee_photo">Coffee photo</string>
+    <string name="no_notes">No notes</string>
+
+    <!-- Search Dialog -->
+    <string name="search_coffee_title">Search Coffee</string>
+    <string name="coffee_name_label">Coffee name</string>
+    <string name="roast_type_label">Roast type</string>
+    <string name="any_roast">Any roast</string>
+    <string name="search_hint">You can filter by name or roast type. Leave a field empty to ignore it. (Leave both empty for default search.)</string>
+    <string name="search">Search</string>
+
+    <!-- Coffee Card Info -->
+    <string name="roast_format">Roast: %s</string>
+    <string name="grind_format">Grind: %s</string>
+    <string name="weight_in_format">Weight in: %s</string>
+    <string name="weight_out_format">Weight out: %s</string>
+    <string name="ratio_format">Ratio: %s</string>
+
+    <!-- Add/Edit Coffee Screen -->
+    <string name="add_coffee_title">Add Coffee</string>
+    <string name="edit_coffee_title">Edit Coffee</string>
+    <string name="roast_level_label">Roast level</string>
+    <string name="notes_label">Notes</string>
+    <string name="photo_label">Photo:</string>
+    <string name="take_photo">Take photo</string>
+    <string name="gallery">Gallery</string>
+    <string name="photo_preview">Photo preview</string>
+    <string name="grind_size_label">Grind size:</string>
+    <string name="weight_in_label">Weight in (g):</string>
+    <string name="weight_out_label">Weight out (g):</string>
+    <string name="ratio_value">Ratio: 1:%.2f</string>
+    <string name="save">Save</string>
+    <string name="add">Add</string>
+    <string name="enter_value">Enter %s</string>
+    <string name="camera_permission_denied">Camera permission was denied</string>
+
+    <!-- Coffee Detail Screen -->
+    <string name="coffee_detail_title">Coffee Detail</string>
+    <string name="delete">Delete</string>
+    <string name="information">Information</string>
+    <string name="roast">Roast</string>
+    <string name="notes">Notes</string>
+    <string name="grind_size">Grind size</string>
+    <string name="weight_in">Weight in</string>
+    <string name="weight_out">Weight out</string>
+    <string name="ratio">Ratio</string>
+    <string name="edit">Edit</string>
+    <string name="delete_coffee_title">Delete coffee?</string>
+    <string name="delete_coffee_message">Are you sure you want to delete coffee \"%s\"? This action cannot be undone.</string>
+
+    <!-- Roast Levels -->
+    <string name="roast_light">Light roast</string>
+    <string name="roast_medium_light">Medium-light</string>
+    <string name="roast_medium">Medium roast</string>
+    <string name="roast_medium_dark">Medium-dark</string>
+    <string name="roast_dark">Dark roast</string>
 </resources>

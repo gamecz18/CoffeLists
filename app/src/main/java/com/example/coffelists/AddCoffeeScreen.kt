@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -77,7 +78,7 @@ fun NumericUpDown(
     if (showDialog) {
         AlertDialog(
             onDismissRequest = { showDialog = false },
-            title = { Text("Zadej $label") },
+            title = { Text(stringResource(R.string.enter_value, label)) },
             text = {
                 OutlinedTextField(
                     value = tempValue,
@@ -104,12 +105,12 @@ fun NumericUpDown(
                         showDialog = false
                     }
                 ) {
-                    Text("OK")
+                    Text(stringResource(R.string.ok))
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDialog = false }) {
-                    Text("Zrušit")
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -149,6 +150,9 @@ fun AddCoffeeScreen(
             photoFile
         )
     }
+
+    val cameraPermissionDeniedText = stringResource(R.string.camera_permission_denied)
+
     val cameraLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.TakePicture()
     ) { success ->
@@ -166,7 +170,7 @@ fun AddCoffeeScreen(
         } else {
             android.widget.Toast.makeText(
                 context,
-                "Oprávnění k použití kamery bylo zamítnuto",
+                cameraPermissionDeniedText,
                 android.widget.Toast.LENGTH_SHORT
             ).show()
         }
@@ -197,12 +201,17 @@ fun AddCoffeeScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(if (existingCoffee != null) "Upravit kávu" else "Přidat kávu")
+                    Text(
+                        if (existingCoffee != null)
+                            stringResource(R.string.edit_coffee_title)
+                        else
+                            stringResource(R.string.add_coffee_title)
+                    )
                 },
                 navigationIcon = if (existingCoffee != null) {
                     {
                         IconButton(onClick = onCancel) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Zpět")
+                            Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                         }
                     }
                 } else {
@@ -227,7 +236,7 @@ fun AddCoffeeScreen(
             OutlinedTextField(
                 value = coffeeName,
                 onValueChange = { coffeeName = it },
-                label = { Text("Název kávy") },
+                label = { Text(stringResource(R.string.coffee_name_label)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -237,10 +246,10 @@ fun AddCoffeeScreen(
                 onExpandedChange = { roastLevelExpanded = it }
             ) {
                 OutlinedTextField(
-                    value = coffeeRoastLevel?.czJmeno ?: "",
+                    value = coffeeRoastLevel?.let { stringResource(it.displayNameRes) } ?: "",
                     onValueChange = { },
                     readOnly = true,
-                    label = { Text("Úroveň pražení") },
+                    label = { Text(stringResource(R.string.roast_level_label)) },
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = roastLevelExpanded)
                     },
@@ -255,7 +264,7 @@ fun AddCoffeeScreen(
                 ) {
                     RoastLevel.entries.forEach { level ->
                         DropdownMenuItem(
-                            text = { Text(level.czJmeno) },
+                            text = { Text(stringResource(level.displayNameRes)) },
                             onClick = {
                                 coffeeRoastLevel = level
                                 roastLevelExpanded = false
@@ -268,13 +277,13 @@ fun AddCoffeeScreen(
             OutlinedTextField(
                 value = coffeeNotes,
                 onValueChange = { coffeeNotes = it },
-                label = { Text("Poznámky") },
+                label = { Text(stringResource(R.string.notes_label)) },
                 modifier = Modifier.fillMaxWidth(),
                 minLines = 3
             )
 
             Column {
-                Text("Fotka:", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.photo_label), style = MaterialTheme.typography.bodyLarge)
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier.padding(top = 8.dp)
@@ -283,13 +292,13 @@ fun AddCoffeeScreen(
                         onClick = { requestCameraAndTakePhoto() },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Vyfotit")
+                        Text(stringResource(R.string.take_photo))
                     }
                     Button(
                         onClick = { galleryLauncher.launch("image/*") },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text("Galerie")
+                        Text(stringResource(R.string.gallery))
                     }
                 }
             }
@@ -299,7 +308,7 @@ fun AddCoffeeScreen(
                 if (imageUri != null) {
                     AsyncImage(
                         model = imageUri,
-                        contentDescription = "Náhled fotky",
+                        contentDescription = stringResource(R.string.photo_preview),
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(200.dp)
@@ -312,14 +321,14 @@ fun AddCoffeeScreen(
             Spacer(modifier = Modifier.height(16.dp))
 
             NumericUpDown(
-                label = "Jemnost mletí:",
+                label = stringResource(R.string.grind_size_label),
                 value = coffeeGroudSize,
                 onValueChange = { coffeeGroudSize = it },
                 step = 1f
             )
 
             NumericUpDown(
-                label = "Váha in (g):",
+                label = stringResource(R.string.weight_in_label),
                 value = weightIn,
                 onValueChange = { weightIn = it },
                 step = 1f,
@@ -327,7 +336,7 @@ fun AddCoffeeScreen(
             )
 
             NumericUpDown(
-                label = "Váha out (g):",
+                label = stringResource(R.string.weight_out_label),
                 value = weightOut,
                 onValueChange = { weightOut = it },
                 step = 1f,
@@ -338,7 +347,7 @@ fun AddCoffeeScreen(
 
             if (weightIn > 0 && weightOut > 0) {
                 Text(
-                    text = "Ratio: 1:${"%.2f".format(weightOut / weightIn)}",
+                    text = stringResource(R.string.ratio_value, weightOut / weightIn),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.padding(start = 8.dp)
@@ -352,7 +361,7 @@ fun AddCoffeeScreen(
                     onClick = onCancel,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text("Zrušit")
+                    Text(stringResource(R.string.cancel))
                 }
 
                 Button(
@@ -384,7 +393,12 @@ fun AddCoffeeScreen(
                     enabled = coffeeName.isNotBlank(),
                     modifier = Modifier.weight(1f)
                 ) {
-                    Text(if (existingCoffee != null) "Uložit" else "Přidat")
+                    Text(
+                        if (existingCoffee != null)
+                            stringResource(R.string.save)
+                        else
+                            stringResource(R.string.add)
+                    )
                 }
             }
         }
