@@ -4,6 +4,15 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.EaseIn
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.Arrangement
@@ -20,6 +29,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.example.coffelists.ui.theme.CoffeListsTheme
 import androidx.navigation.compose.NavHost
@@ -57,10 +67,11 @@ fun searchDialog(
     var expanded by remember { mutableStateOf(false) }
     var selectedRoast by rememberSaveable { mutableStateOf(initialRoast) }
 
+    val anyRoastText = stringResource(R.string.any_roast)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Vyhledat kávu") },
+        title = { Text(stringResource(R.string.search_coffee_title)) },
         text =
             {
                 Column(
@@ -72,7 +83,7 @@ fun searchDialog(
                             name = it
                             onValueChange(it)
                         },
-                        label = { Text("Název kávy") }
+                        label = { Text(stringResource(R.string.coffee_name_label)) }
 
                     )
 
@@ -82,10 +93,10 @@ fun searchDialog(
                         onExpandedChange = { expanded = it }
                     ) {
                         OutlinedTextField(
-                            value = selectedRoast?.czJmeno ?: "Libovolné pražení",
+                            value = selectedRoast?.let { stringResource(it.displayNameRes) } ?: anyRoastText,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Typ pražení") },
+                            label = { Text(stringResource(R.string.roast_type_label)) },
                             trailingIcon = {
                                 ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
                             },
@@ -97,7 +108,7 @@ fun searchDialog(
                             onDismissRequest = { expanded = false }
                         ) {
                             DropdownMenuItem(
-                                text = { Text("Libovolné pražení") },
+                                text = { Text(anyRoastText) },
                                 onClick = {
                                     selectedRoast = null
                                     expanded = false
@@ -108,7 +119,7 @@ fun searchDialog(
 
                             RoastLevel.entries.forEach { roastLevel ->
                                 DropdownMenuItem(
-                                    text = { Text(roastLevel.czJmeno) },
+                                    text = { Text(stringResource(roastLevel.displayNameRes)) },
                                     onClick = {
                                         selectedRoast = roastLevel
                                         expanded = false
@@ -118,7 +129,7 @@ fun searchDialog(
                         }
                     }
                     Text(
-                        text = "Můžeš filtrovat podle názvu nebo typu pražení. Pokud necháš některé pole prázdné, bude ignorováno. (Pro výchozí hledání nech obě pole prázdná.)",
+                        text = stringResource(R.string.search_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -129,12 +140,12 @@ fun searchDialog(
 
         confirmButton = {
             Button(onClick = { onConfirm(name, selectedRoast) }) {
-                Text("Hledat")
+                Text(stringResource(R.string.search))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("Zrušit")
+                Text(stringResource(R.string.cancel))
             }
         }
     )
@@ -176,9 +187,67 @@ fun CoffeeAppUI() {
         isLoading = false
     }
 
-    NavHost(navController = navController, startDestination = "home") {
+    // Animation duration for smooth transitions
+    val animationDuration = 400
 
-        composable("home") {
+    NavHost(
+        navController = navController,
+        startDestination = "home",
+        // Default enter transition: slide in from right with fade
+        enterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(animationDuration))
+        },
+        // Default exit transition: slide out to left with fade
+        exitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(animationDuration / 2))
+        },
+        // Pop enter transition: slide in from left with fade (going back)
+        popEnterTransition = {
+            slideIntoContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeIn(animationSpec = tween(animationDuration))
+        },
+        // Pop exit transition: slide out to right with fade (going back)
+        popExitTransition = {
+            slideOutOfContainer(
+                towards = AnimatedContentTransitionScope.SlideDirection.End,
+                animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+            ) + fadeOut(animationSpec = tween(animationDuration / 2))
+        }
+    ) {
+
+        composable(
+            route = "home",
+            // Home screen uses fade + scale for a more subtle effect
+            enterTransition = {
+                fadeIn(animationSpec = tween(animationDuration)) +
+                scaleIn(
+                    initialScale = 0.95f,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                )
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(animationDuration / 2)) +
+                scaleOut(
+                    targetScale = 0.95f,
+                    animationSpec = tween(animationDuration / 2, easing = EaseIn)
+                )
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(animationDuration)) +
+                scaleIn(
+                    initialScale = 0.95f,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                )
+            }
+        ) {
             CoffeeListScreen(
                 coffees = filteredCoffees,
                 isLoading = isLoading,
@@ -197,7 +266,28 @@ fun CoffeeAppUI() {
             )
         }
 
-        composable("coffeeDetail/{coffeeId}") { backStackEntry ->
+        composable(
+            route = "coffeeDetail/{coffeeId}",
+            // Detail screen slides in from right
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(animationDuration))
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Start,
+                    animationSpec = tween(animationDuration, easing = EaseIn)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.End,
+                    animationSpec = tween(animationDuration, easing = EaseOut)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            }
+        ) { backStackEntry ->
             val coffeeId = backStackEntry.arguments?.getString("coffeeId")
             val coffee = allCoffees.find { it.id == coffeeId }
 
@@ -228,7 +318,28 @@ fun CoffeeAppUI() {
         }
 
 
-        composable("addCoffee") {
+        composable(
+            route = "addCoffee",
+            // Add screen slides up from bottom for a modal-like feel
+            enterTransition = {
+                slideIntoContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)
+                ) + fadeIn(animationSpec = tween(animationDuration))
+            },
+            exitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Up,
+                    animationSpec = tween(animationDuration, easing = EaseIn)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            },
+            popExitTransition = {
+                slideOutOfContainer(
+                    towards = AnimatedContentTransitionScope.SlideDirection.Down,
+                    animationSpec = tween(animationDuration, easing = EaseOut)
+                ) + fadeOut(animationSpec = tween(animationDuration / 2))
+            }
+        ) {
             AddCoffeeScreen(
                 existingCoffee = null,
                 onSaveCoffee = { newCoffee ->
@@ -266,12 +377,13 @@ fun CoffeeListScreen(
 
     val isFiltered = currentFilterName.isNotBlank() || currentFilterRoast != null
 
+    val notSpecifiedText = stringResource(R.string.not_specified)
 
     Scaffold(
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                title = { Text("Coffee List") },
+                title = { Text(stringResource(R.string.coffee_list_title)) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer
                 ),
@@ -297,7 +409,7 @@ fun CoffeeListScreen(
                                 containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                             ) {
-                                Icon(Icons.Filled.Search, contentDescription = "Vyhledat kávů")
+                                Icon(Icons.Filled.Search, contentDescription = stringResource(R.string.search_coffee))
                             }
 
                             FloatingActionButton(
@@ -305,7 +417,7 @@ fun CoffeeListScreen(
                                 containerColor = BottomAppBarDefaults.bottomAppBarFabColor,
                                 elevation = FloatingActionButtonDefaults.bottomAppBarFabElevation()
                             ) {
-                                Icon(Icons.Filled.Add, contentDescription = "Přidat kávu")
+                                Icon(Icons.Filled.Add, contentDescription = stringResource(R.string.add_coffee))
                             }
 
                         }
@@ -352,14 +464,14 @@ fun CoffeeListScreen(
                     if (isFiltered) {
                         item {
                             Text(
-                                text = "Nebyly nalezeny žádné kávy odpovídající filtru.",
+                                text = stringResource(R.string.no_coffees_filter),
                                 modifier = Modifier.padding(16.dp)
                             )
                         }
                     } else {
                         item {
                             Text(
-                                text = "Zatím žádné kávy. Klikni na ➕",
+                                text = stringResource(R.string.no_coffees_yet),
                                 modifier = Modifier.padding(16.dp)
                             )
                         }
@@ -387,7 +499,7 @@ fun CoffeeListScreen(
                                 if (imageUri != null) {
                                     AsyncImage(
                                         model = imageUri,
-                                        contentDescription = "Fotka kávy",
+                                        contentDescription = stringResource(R.string.coffee_photo),
                                         modifier = Modifier
                                             .size(80.dp)
                                             .clip(RoundedCornerShape(8.dp)),
@@ -409,7 +521,7 @@ fun CoffeeListScreen(
 
                                 // Poznámky
                                 Text(
-                                    text = coffee.notes.ifBlank { "Bez poznámky" },
+                                    text = coffee.notes.ifBlank { stringResource(R.string.no_notes) },
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = if (coffee.notes.isBlank()) {
                                         MaterialTheme.colorScheme.onSurfaceVariant
@@ -422,29 +534,30 @@ fun CoffeeListScreen(
                                 Spacer(modifier = Modifier.height(8.dp))
 
                                 // Úroveň pražení
+                                val roastText = coffee.roastLevel?.let { stringResource(it.displayNameRes) } ?: notSpecifiedText
                                 Text(
-                                    text = "Pražení: ${coffee.roastLevel?.czJmeno ?: "Neuvedeno"}",
+                                    text = stringResource(R.string.roast_format, roastText),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 // Jemnost mletí
                                 Text(
-                                    text = "Jemnost: ${coffee.grindLevel?.toString() ?: "Neuvedeno"}",
+                                    text = stringResource(R.string.grind_format, coffee.grindLevel?.toString() ?: notSpecifiedText),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 // Váha in
                                 Text(
-                                    text = "Váha in: ${coffee.weightInGrams?.toString()?.plus("g") ?: "Neuvedeno"}",
+                                    text = stringResource(R.string.weight_in_format, coffee.weightInGrams?.let { "${it}g" } ?: notSpecifiedText),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
 
                                 // Váha out
                                 Text(
-                                    text = "Váha out: ${coffee.weighOut?.toString()?.plus("g") ?: "Neuvedeno"}",
+                                    text = stringResource(R.string.weight_out_format, coffee.weighOut?.let { "${it}g" } ?: notSpecifiedText),
                                     style = MaterialTheme.typography.bodySmall,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -455,13 +568,13 @@ fun CoffeeListScreen(
                                     val ratio = coffee.weighOut!! / coffee.weightInGrams!!
                                     "1:${"%.2f".format(ratio)}"
                                 } else {
-                                    "Neuvedeno"
+                                    notSpecifiedText
                                 }
 
                                 Text(
-                                    text = "Ratio: $ratioText",
+                                    text = stringResource(R.string.ratio_format, ratioText),
                                     style = MaterialTheme.typography.bodySmall,
-                                    color = if (ratioText != "Neuvedeno") {
+                                    color = if (ratioText != notSpecifiedText) {
                                         MaterialTheme.colorScheme.primary
                                     } else {
                                         MaterialTheme.colorScheme.onSurfaceVariant

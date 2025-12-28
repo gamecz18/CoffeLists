@@ -1,4 +1,6 @@
 package cz.g18.coffeelists
+
+import androidx.annotation.StringRes
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -12,14 +14,12 @@ data class Coffee(
     var weightInGrams: Float? = null,
     var weighOut: Float? = null
 )
+
 @Serializable
-enum class RoastLevel (val czJmeno: String) {
-    LIGHT("Světlé pražení"),
-    MEDIUM_LIGHT("Středně světlé"),
-    MEDIUM("Střední pražení"),
-    MEDIUM_DARK("Středně tmavé"),
-    DARK("Tmavé pražení");
-
-
-    override fun toString(): String = czJmeno
+enum class RoastLevel(@StringRes val displayNameRes: Int) {
+    LIGHT(R.string.roast_light),
+    MEDIUM_LIGHT(R.string.roast_medium_light),
+    MEDIUM(R.string.roast_medium),
+    MEDIUM_DARK(R.string.roast_medium_dark),
+    DARK(R.string.roast_dark)
 }

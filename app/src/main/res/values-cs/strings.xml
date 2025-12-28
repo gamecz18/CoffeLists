@@ -1,0 +1,72 @@
+<resources>
+    <string name="app_name">CoffeLists</string>
+
+    <!-- Common -->
+    <string name="cancel">Zrušit</string>
+    <string name="ok">OK</string>
+    <string name="back">Zpět</string>
+    <string name="not_specified">Neuvedeno</string>
+
+    <!-- Coffee List Screen -->
+    <string name="coffee_list_title">Seznam káv</string>
+    <string name="search_coffee">Vyhledat kávu</string>
+    <string name="add_coffee">Přidat kávu</string>
+    <string name="no_coffees_yet">Zatím žádné kávy. Klikni na +</string>
+    <string name="no_coffees_filter">Nebyly nalezeny žádné kávy odpovídající filtru.</string>
+    <string name="coffee_photo">Fotka kávy</string>
+    <string name="no_notes">Bez poznámky</string>
+
+    <!-- Search Dialog -->
+    <string name="search_coffee_title">Vyhledat kávu</string>
+    <string name="coffee_name_label">Název kávy</string>
+    <string name="roast_type_label">Typ pražení</string>
+    <string name="any_roast">Libovolné pražení</string>
+    <string name="search_hint">Můžeš filtrovat podle názvu nebo typu pražení. Pokud necháš některé pole prázdné, bude ignorováno. (Pro výchozí hledání nech obě pole prázdná.)</string>
+    <string name="search">Hledat</string>
+
+    <!-- Coffee Card Info -->
+    <string name="roast_format">Pražení: %s</string>
+    <string name="grind_format">Jemnost: %s</string>
+    <string name="weight_in_format">Váha in: %s</string>
+    <string name="weight_out_format">Váha out: %s</string>
+    <string name="ratio_format">Ratio: %s</string>
+
+    <!-- Add/Edit Coffee Screen -->
+    <string name="add_coffee_title">Přidat kávu</string>
+    <string name="edit_coffee_title">Upravit kávu</string>
+    <string name="roast_level_label">Úroveň pražení</string>
+    <string name="notes_label">Poznámky</string>
+    <string name="photo_label">Fotka:</string>
+    <string name="take_photo">Vyfotit</string>
+    <string name="gallery">Galerie</string>
+    <string name="photo_preview">Náhled fotky</string>
+    <string name="grind_size_label">Jemnost mletí:</string>
+    <string name="weight_in_label">Váha in (g):</string>
+    <string name="weight_out_label">Váha out (g):</string>
+    <string name="ratio_value">Ratio: 1:%.2f</string>
+    <string name="save">Uložit</string>
+    <string name="add">Přidat</string>
+    <string name="enter_value">Zadej %s</string>
+    <string name="camera_permission_denied">Oprávnění k použití kamery bylo zamítnuto</string>
+
+    <!-- Coffee Detail Screen -->
+    <string name="coffee_detail_title">Detail kávy</string>
+    <string name="delete">Smazat</string>
+    <string name="information">Informace</string>
+    <string name="roast">Pražení</string>
+    <string name="notes">Poznámky</string>
+    <string name="grind_size">Jemnost mletí</string>
+    <string name="weight_in">Váha in</string>
+    <string name="weight_out">Váha out</string>
+    <string name="ratio">Ratio</string>
+    <string name="edit">Upravit</string>
+    <string name="delete_coffee_title">Smazat kávu?</string>
+    <string name="delete_coffee_message">Opravdu chcete smazat kávu \"%s\"? Tuto akci nelze vrátit zpět.</string>
+
+    <!-- Roast Levels -->
+    <string name="roast_light">Světlé pražení</string>
+    <string name="roast_medium_light">Středně světlé</string>
+    <string name="roast_medium">Střední pražení</string>
+    <string name="roast_medium_dark">Středně tmavé</string>
+    <string name="roast_dark">Tmavé pražení</string>
+</resources>

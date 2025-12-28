@@ -1,5 +1,5 @@
 package cz.g18.coffeelists
-import android.net.Uri
+
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 
@@ -25,6 +26,9 @@ fun CoffeeInfoView(
 ) {
     var isEditing by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
+
+    val notSpecifiedText = stringResource(R.string.not_specified)
+    val noNotesText = stringResource(R.string.no_notes)
 
     if (isEditing) {
 
@@ -42,17 +46,17 @@ fun CoffeeInfoView(
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text("Detail kávy") },
+                    title = { Text(stringResource(R.string.coffee_detail_title)) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.Filled.ArrowBack, contentDescription = "Zpět")
+                            Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.back))
                         }
                     },
                     actions = {
                         IconButton(onClick = { showDeleteDialog = true }) {
                             Icon(
                                 Icons.Filled.Delete,
-                                contentDescription = "Smazat",
+                                contentDescription = stringResource(R.string.delete),
                                 tint = MaterialTheme.colorScheme.error
                             )
                         }
@@ -77,7 +81,7 @@ fun CoffeeInfoView(
                     if (imageUri != null) {
                         AsyncImage(
                             model = imageUri,
-                            contentDescription = "Fotka kávy",
+                            contentDescription = stringResource(R.string.coffee_photo),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(250.dp)
@@ -102,23 +106,38 @@ fun CoffeeInfoView(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "Informace",
+                            text = stringResource(R.string.information),
                             style = MaterialTheme.typography.titleMedium
                         )
 
                         HorizontalDivider()
 
-                        InfoRow("Pražení", coffee.roastLevel?.czJmeno ?: "Neuvedeno")
-                        InfoRow("Poznámky", coffee.notes.ifBlank { "Bez poznámky" })
-                        InfoRow("Jemnost mletí", coffee.grindLevel?.toString() ?: "Neuvedeno")
-                        InfoRow("Váha in", coffee.weightInGrams?.let { "${it}g" } ?: "Neuvedeno")
-                        InfoRow("Váha out", coffee.weighOut?.let { "${it}g" } ?: "Neuvedeno")
+                        InfoRow(
+                            stringResource(R.string.roast),
+                            coffee.roastLevel?.let { stringResource(it.displayNameRes) } ?: notSpecifiedText
+                        )
+                        InfoRow(
+                            stringResource(R.string.notes),
+                            coffee.notes.ifBlank { noNotesText }
+                        )
+                        InfoRow(
+                            stringResource(R.string.grind_size),
+                            coffee.grindLevel?.toString() ?: notSpecifiedText
+                        )
+                        InfoRow(
+                            stringResource(R.string.weight_in),
+                            coffee.weightInGrams?.let { "${it}g" } ?: notSpecifiedText
+                        )
+                        InfoRow(
+                            stringResource(R.string.weight_out),
+                            coffee.weighOut?.let { "${it}g" } ?: notSpecifiedText
+                        )
 
                         if (coffee.weightInGrams != null && coffee.weighOut != null
                             && coffee.weightInGrams!! > 0 && coffee.weighOut!! > 0) {
                             val ratio = coffee.weighOut!! / coffee.weightInGrams!!
                             InfoRow(
-                                "Ratio",
+                                stringResource(R.string.ratio),
                                 "1:${"%.2f".format(ratio)}",
                                 valueColor = MaterialTheme.colorScheme.primary
                             )
@@ -131,7 +150,7 @@ fun CoffeeInfoView(
                     onClick = { isEditing = true },
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Upravit")
+                    Text(stringResource(R.string.edit))
                 }
             }
         }
@@ -140,8 +159,8 @@ fun CoffeeInfoView(
         if (showDeleteDialog) {
             AlertDialog(
                 onDismissRequest = { showDeleteDialog = false },
-                title = { Text("Smazat kávu?") },
-                text = { Text("Opravdu chcete smazat kávu \"${coffee.name}\"? Tuto akci nelze vrátit zpět.") },
+                title = { Text(stringResource(R.string.delete_coffee_title)) },
+                text = { Text(stringResource(R.string.delete_coffee_message, coffee.name)) },
                 confirmButton = {
                     Button(
                         onClick = {
@@ -152,12 +171,12 @@ fun CoffeeInfoView(
                             containerColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Text("Smazat")
+                        Text(stringResource(R.string.delete))
                     }
                 },
                 dismissButton = {
                     TextButton(onClick = { showDeleteDialog = false }) {
-                        Text("Zrušit")
+                        Text(stringResource(R.string.cancel))
                     }
                 }
             )
